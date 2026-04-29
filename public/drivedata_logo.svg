@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" fill="none">
+  <defs>
+    <linearGradient id="mainGrad" x1="0" y1="500" x2="500" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#00D084"/>
+      <stop offset="45%"  stop-color="#00C2E0"/>
+      <stop offset="100%" stop-color="#1E90FF"/>
+    </linearGradient>
+    <linearGradient id="barTopGrad" x1="0" y1="320" x2="240" y2="80" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#0057D9"/>
+      <stop offset="100%" stop-color="#00B8D4"/>
+    </linearGradient>
+    <linearGradient id="barBotGrad" x1="0" y1="500" x2="200" y2="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#00C97A"/>
+      <stop offset="100%" stop-color="#00A8CC"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Grande D — arco principal -->
+  <path d="
+    M 90 30
+    L 240 30
+    C 410 30 480 130 480 250
+    C 480 370 410 470 240 470
+    L 90 470
+    Z
+  " fill="url(#mainGrad)"/>
+
+  <!-- Barra superior esquerda (parallelogram escuro, efeito 3D) -->
+  <path d="
+    M 30 115
+    L 210 115
+    L 90 320
+    L 30 320
+    Z
+  " fill="url(#barTopGrad)" opacity="0.92"/>
+
+  <!-- Barra inferior esquerda -->
+  <path d="
+    M 30 355
+    L 130 355
+    L 200 470
+    L 30 470
+    Z
+  " fill="url(#barBotGrad)" opacity="0.88"/>
+</svg>

@@ -1,0 +1,5 @@
+data,colaborador,horas,custo_hora,tipo,descricao
+2024-01-15,Engel Trindade,8,150,billable,Integração API WMS
+2024-01-15,Maria Silva,6,120,billable,Desenvolvimento frontend
+2024-01-16,João Santos,4,100,non_billable,Retrabalho mapeamento
+2024-01-17,Engel Trindade,8,150,billable,Configuração OCR
