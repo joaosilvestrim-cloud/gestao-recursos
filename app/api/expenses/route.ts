@@ -4,30 +4,15 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
   const { searchParams } = new URL(request.url);
-  const status = searchParams.get('status');
-  const withRisk = searchParams.get('risk') === '1';
-
-  if (withRisk) {
-    // Return enriched data from the view (includes CPI, risk_level, costs)
-    let query = supabase
-      .from('v_project_pl')
-      .select('*')
-      .order('project_name');
-
-    if (status) query = query.eq('status', status);
-
-    const { data, error } = await query;
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json(data);
-  }
+  const projectId = searchParams.get('project_id');
 
   let query = supabase
-    .from('projects')
-    .select('*, client:clients(id, name)')
+    .from('project_expenses')
+    .select('*, project:projects(id, name)')
     .is('deleted_at', null)
-    .order('created_at', { ascending: false });
+    .order('expense_date', { ascending: false });
 
-  if (status) query = query.eq('status', status);
+  if (projectId) query = query.eq('project_id', projectId);
 
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -39,7 +24,7 @@ export async function POST(request: NextRequest) {
   const body = await request.json();
 
   const { data, error } = await supabase
-    .from('projects')
+    .from('project_expenses')
     .insert(body)
     .select()
     .single();
