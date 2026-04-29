@@ -3,6 +3,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import PageHeader from '@/components/ui/PageHeader';
 import Modal from '@/components/ui/Modal';
+import FieldHelp from '@/components/ui/FieldHelp';
+import InfoBox from '@/components/ui/InfoBox';
 
 interface Project { id: string; name: string; }
 interface Expense {
@@ -111,6 +113,12 @@ export default function ExpensesPage() {
 
   return (
     <div className="p-8">
+      <InfoBox icon="💳" title="Para que serve este menu?">
+        <p>Registra <strong className="text-white">custos diretos de projeto que não são horas de equipe</strong>: licenças de software, viagens, hospedagem, contratação pontual de freelancers PJ, hardware, materiais.</p>
+        <p className="mt-1">Cada despesa lançada aqui é <strong className="text-white">descontada da margem do projeto imediatamente</strong>, garantindo que o P&amp;L reflita o custo real — não apenas o esforço da equipe.</p>
+        <p className="mt-1 text-gray-500">Exemplo: o projeto tem budget de R$ 60K. Já gastou R$ 35K em horas. Você contrata um dev freelancer por R$ 8K → a margem cai para R$ 17K automaticamente, sem precisar recalcular nada.</p>
+      </InfoBox>
+
       <PageHeader
         title="Despesas Extras"
         description="Licenças, viagens, contratados PJ — custo real além das horas"
@@ -238,14 +246,19 @@ export default function ExpensesPage() {
 
       {/* Modal */}
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Editar Despesa' : 'Nova Despesa'}>
-        <div className="space-y-4">
+        <div className="space-y-5">
+          <InfoBox icon="💡" title="Dica de preenchimento" variant="tip">
+            <p>Seja específico na descrição — este campo aparece nos relatórios de auditoria e ajuda a entender onde o dinheiro foi gasto meses depois.</p>
+          </InfoBox>
+
           <div>
             <label className="block text-xs font-medium text-gray-400 mb-1">Projeto</label>
             <select value={form.project_id} onChange={(e) => setForm({ ...form, project_id: e.target.value })}
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
-              <option value="">Sem projeto específico</option>
+              <option value="">Sem projeto específico (custo geral)</option>
               {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
+            <FieldHelp text="Projeto ao qual esta despesa será atribuída. A despesa reduz a margem do projeto imediatamente no P&L. Se for um custo operacional geral sem projeto específico (ex: renovação de domínio), deixe em branco." />
           </div>
 
           <div>
@@ -266,11 +279,14 @@ export default function ExpensesPage() {
             </div>
           </div>
 
+          <FieldHelp text="Classifica a despesa para fins de relatório e análise. Licença de Software: assinaturas de ferramentas e plataformas. Viagem: passagens, hospedagem, alimentação em campo. Contratado/PJ: freelancers e consultores externos pontuais. Hardware/Infra: equipamentos, servidores, cloud. Marketing: materiais, eventos, brindes. Outros: despesas que não se encaixam nas anteriores." />
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-400 mb-1">Data *</label>
               <input type="date" value={form.expense_date} onChange={(e) => setForm({ ...form, expense_date: e.target.value })}
                 className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" />
+              <FieldHelp text="Data em que a despesa foi incorrida — preferencialmente a data da nota fiscal ou do pagamento. Usada para análise temporal dos custos." />
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-400 mb-1">Valor (R$) *</label>
@@ -280,14 +296,16 @@ export default function ExpensesPage() {
                   placeholder="0,00"
                   className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-9 pr-3 py-2 text-sm text-white font-semibold focus:outline-none focus:border-cyan-500" />
               </div>
+              <FieldHelp text="Valor total da despesa em reais. Para despesas em moeda estrangeira, converta pela cotação do dia do pagamento." />
             </div>
           </div>
 
           <div>
             <label className="block text-xs font-medium text-gray-400 mb-1">Descrição *</label>
             <input type="text" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="Ex: Licença AWS março, Passagem SP-RJ, Contrato dev freelancer..."
+              placeholder="Ex: Licença AWS março/2025, Passagem aérea SP-RJ reunião cliente, Contrato dev freelancer Sprint 3"
               className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500" />
+            <FieldHelp text="Detalhe do gasto — quanto mais específico, melhor. Este campo aparece nos relatórios de auditoria e ajuda a entender a origem de cada custo meses depois. Exemplos: 'Licença Figma anual', 'Hotel 3 noites workshop Tambasa', 'Dev freelancer React — 40h Sprint 5'." />
           </div>
 
           {form.amount && form.project_id && (

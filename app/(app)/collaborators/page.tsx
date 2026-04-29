@@ -4,6 +4,8 @@ import { useEffect, useState, useMemo } from 'react';
 import PageHeader from '@/components/ui/PageHeader';
 import Modal from '@/components/ui/Modal';
 import Badge from '@/components/ui/Badge';
+import FieldHelp from '@/components/ui/FieldHelp';
+import InfoBox from '@/components/ui/InfoBox';
 import type { Collaborator } from '@/lib/types/database';
 
 type CollaboratorWithCost = Collaborator & {
@@ -101,6 +103,12 @@ export default function CollaboratorsPage() {
 
   return (
     <div className="p-8">
+      <InfoBox icon="👥" title="Para que serve este menu?">
+        <p>Colaboradores são a <strong className="text-white">fundação do motor financeiro</strong>. Antes de importar qualquer hora do Clockify, cada membro da equipe precisa ter o seu <strong className="text-white">Custo H/H (hora/homem)</strong> cadastrado aqui.</p>
+        <p className="mt-1">Quando você importar um CSV com horas trabalhadas, o sistema cruza o nome do colaborador com o custo H/H cadastrado e calcula automaticamente o custo daquelas horas no projeto. <strong className="text-white">Sem o custo cadastrado = custo zero nos relatórios.</strong></p>
+        <p className="mt-1 text-gray-500">Aumentou o salário de alguém? Edite o colaborador e informe o novo custo. O sistema fecha o período antigo e abre o novo — o histórico passado não é alterado.</p>
+      </InfoBox>
+
       <PageHeader
         title="Colaboradores"
         description="Base de custo H/H — fundação do motor financeiro"
@@ -203,15 +211,41 @@ export default function CollaboratorsPage() {
 
       {/* Modal */}
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Editar Colaborador' : 'Novo Colaborador'}>
-        <div className="space-y-4">
+        <div className="space-y-5">
+          <InfoBox icon="💡" title="Como preencher" variant="tip">
+            <p>O nome do colaborador precisa ser <strong className="text-white">exatamente igual</strong> ao nome cadastrado no Clockify (ou outra ferramenta de horas). É por esse nome que o sistema faz o cruzamento automático na importação.</p>
+          </InfoBox>
+
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Nome *" value={form.name} onChange={(v) => setForm({ ...form, name: v })} placeholder="Engel Trindade" />
-            <Field label="E-mail *" value={form.email} onChange={(v) => setForm({ ...form, email: v })} placeholder="engel@drivedata.com" type="email" />
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">Nome *</label>
+              <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Engel Trindade"
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500" />
+              <FieldHelp text="Nome completo exatamente como aparece no Clockify ou na ferramenta de registro de horas. O sistema usa este nome para cruzar automaticamente as horas importadas com o custo H/H registrado aqui." />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">E-mail *</label>
+              <input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="engel@drivedata.com"
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500" />
+              <FieldHelp text="E-mail corporativo do colaborador. Usado como identificador único — ideal ser o mesmo do Clockify." />
+            </div>
           </div>
+
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Cargo / Skill Principal *" value={form.role} onChange={(v) => setForm({ ...form, role: v })} placeholder="Especialista em Integrações" />
-            <Field label="Departamento" value={form.department} onChange={(v) => setForm({ ...form, department: v })} placeholder="Tecnologia" />
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">Cargo / Skill Principal *</label>
+              <input type="text" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} placeholder="Especialista em Integrações"
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500" />
+              <FieldHelp text="Função principal ou competência técnica dominante. Ex: 'Dev Backend', 'UX Designer', 'Arquiteto de Soluções', 'Project Manager'. Aparece nos relatórios de alocação por perfil." />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">Departamento</label>
+              <input type="text" value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} placeholder="Tecnologia"
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500" />
+              <FieldHelp text="Área ou squad ao qual o colaborador pertence. Ex: 'Tecnologia', 'Dados', 'Design', 'PMO'. Permite agrupar e comparar custos por departamento nos relatórios." />
+            </div>
           </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-400 mb-1">Seniority</label>
@@ -219,8 +253,14 @@ export default function CollaboratorsPage() {
                 className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
                 {seniorityOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
+              <FieldHelp text="Nível de senioridade. Junto com o cargo, define o perfil para o Capacity Forecast — quando um projeto no pipeline exige 'Dev Sênior', o sistema consegue identificar quem tem disponibilidade." />
             </div>
-            <Field label="Capacidade (h/sem)" value={form.weekly_capacity_hours} onChange={(v) => setForm({ ...form, weekly_capacity_hours: v })} placeholder="40" type="number" />
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">Capacidade (h/sem)</label>
+              <input type="number" value={form.weekly_capacity_hours} onChange={(e) => setForm({ ...form, weekly_capacity_hours: e.target.value })} placeholder="40"
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500" />
+              <FieldHelp text="Horas semanais disponíveis para trabalho em projetos. Padrão CLT: 40h. Reduzir para colaboradores part-time, com carga interna (reuniões, P&D) ou em período de férias parcial. Base do Capacity Forecast." />
+            </div>
           </div>
 
           {/* Campo crítico destacado */}
@@ -229,7 +269,11 @@ export default function CollaboratorsPage() {
               <span className="text-cyan-400 text-sm">⚡</span>
               <label className="text-xs font-bold text-cyan-400 uppercase tracking-wide">Custo Hora/Homem — Métrica Crítica</label>
             </div>
-            <p className="text-xs text-gray-500 mb-3">Este valor é a base do cálculo de rentabilidade de todos os projetos. Alterações criam um novo período no histórico.</p>
+            <div className="text-xs text-gray-500 mb-3 space-y-1.5">
+              <p>Este é o <strong className="text-gray-300">custo real por hora</strong> que este colaborador representa para a empresa, incluindo salário + encargos trabalhistas (FGTS, INSS, férias, 13°) + benefícios + overhead de escritório.</p>
+              <p><strong className="text-gray-300">Como calcular:</strong> Some o custo mensal total e divida pelas horas trabalhadas no mês. Ex: salário R$ 8.000 + encargos 70% = R$ 13.600/mês ÷ 160h = <strong className="text-cyan-400">R$ 85/h</strong>.</p>
+              <p className="text-yellow-400/80">⚠ Alterações criam um novo período no histórico — lançamentos passados mantêm o custo da época em que foram registrados.</p>
+            </div>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">R$</span>
               <input

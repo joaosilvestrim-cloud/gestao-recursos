@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import PageHeader from '@/components/ui/PageHeader';
 import Modal from '@/components/ui/Modal';
+import FieldHelp from '@/components/ui/FieldHelp';
+import InfoBox from '@/components/ui/InfoBox';
 import type { Client } from '@/lib/types/database';
 
 interface ProjectRisk {
@@ -69,7 +71,6 @@ function BurnBar({ costPct, progressPct }: { costPct: number; progressPct: numbe
       </div>
       <div className="relative w-full bg-gray-800 rounded-full h-2">
         <div className={`h-2 rounded-full ${color} transition-all`} style={{ width: `${Math.min(capped, 100)}%` }} />
-        {/* Progress marker */}
         {progressPct > 0 && (
           <div
             className="absolute top-1/2 -translate-y-1/2 w-0.5 h-3 bg-white/60 rounded-full"
@@ -100,10 +101,7 @@ export default function ProjectsPage() {
 
   async function load() {
     setLoading(true);
-    const [pRes, cRes] = await Promise.all([
-      fetch('/api/projects?risk=1'),
-      fetch('/api/clients'),
-    ]);
+    const [pRes, cRes] = await Promise.all([fetch('/api/projects?risk=1'), fetch('/api/clients')]);
     setProjects(await pRes.json());
     setClients(await cRes.json());
     setLoading(false);
@@ -111,24 +109,15 @@ export default function ProjectsPage() {
 
   useEffect(() => { load(); }, []);
 
-  function openNew() {
-    setEditingId(null);
-    setForm(emptyForm);
-    setModalOpen(true);
-  }
+  function openNew() { setEditingId(null); setForm(emptyForm); setModalOpen(true); }
 
   function openEdit(p: ProjectRisk) {
     setEditingId(p.project_id);
     setForm({
-      name: p.project_name,
-      client_id: p.client_id ?? '',
-      description: '',
-      started_at: p.started_at ?? '',
-      estimated_end_at: p.estimated_end_at ?? '',
-      contract_value: String(p.revenue),
-      budget_hours: String(p.budget_hours),
-      budget_cost: String(p.budget_cost),
-      status: p.status,
+      name: p.project_name, client_id: p.client_id ?? '', description: '',
+      started_at: p.started_at ?? '', estimated_end_at: p.estimated_end_at ?? '',
+      contract_value: String(p.revenue), budget_hours: String(p.budget_hours),
+      budget_cost: String(p.budget_cost), status: p.status,
       progress_pct: String(p.progress_pct ?? 0),
     });
     setModalOpen(true);
@@ -143,23 +132,14 @@ export default function ProjectsPage() {
   async function save() {
     setSaving(true);
     const payload = {
-      name: form.name,
-      client_id: form.client_id || null,
-      description: form.description || null,
-      started_at: form.started_at || null,
-      estimated_end_at: form.estimated_end_at || null,
-      contract_value: Number(form.contract_value) || 0,
-      budget_hours: Number(form.budget_hours) || 0,
-      budget_cost: Number(form.budget_cost) || 0,
-      status: form.status,
+      name: form.name, client_id: form.client_id || null, description: form.description || null,
+      started_at: form.started_at || null, estimated_end_at: form.estimated_end_at || null,
+      contract_value: Number(form.contract_value) || 0, budget_hours: Number(form.budget_hours) || 0,
+      budget_cost: Number(form.budget_cost) || 0, status: form.status,
       progress_pct: Number(form.progress_pct) || 0,
     };
     const url = editingId ? `/api/projects/${editingId}` : '/api/projects';
-    const res = await fetch(url, {
-      method: editingId ? 'PATCH' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+    const res = await fetch(url, { method: editingId ? 'PATCH' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     if (!res.ok) { const e = await res.json(); alert(e.error); }
     setSaving(false); setModalOpen(false); load();
   }
@@ -167,11 +147,7 @@ export default function ProjectsPage() {
   async function saveProgress() {
     if (!editingId) return;
     setSaving(true);
-    await fetch(`/api/projects/${editingId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ progress_pct: progressVal }),
-    });
+    await fetch(`/api/projects/${editingId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ progress_pct: progressVal }) });
     setSaving(false); setProgressOpen(false); load();
   }
 
@@ -184,7 +160,7 @@ export default function ProjectsPage() {
     <div className="p-8">
       <PageHeader
         title="Projetos"
-        description="Portfólio de contratos — saúde financeira e CPI em tempo real"
+        description="Portfólio de contratos — orçamento, saúde financeira e CPI calculados em tempo real"
         action={
           <button onClick={openNew} className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-green-600 hover:opacity-90 text-white text-sm font-medium rounded-xl transition-opacity">
             + Novo Projeto
@@ -192,8 +168,24 @@ export default function ProjectsPage() {
         }
       />
 
+      <InfoBox icon="📁" title="Para que serve este menu?">
+        <p>
+          Projetos são os <strong className="text-white">contratos fechados com seus clientes</strong>. Para cada projeto você define o
+          <strong className="text-white"> valor do contrato</strong> (receita) e o <strong className="text-white">budget de custo</strong> (quanto pode gastar).
+          O sistema monitora automaticamente quanto foi consumido e calcula a margem real.
+        </p>
+        <p className="mt-1">
+          <strong className="text-white">CPI (Índice de Performance de Custo)</strong> = % entregue ÷ % orçamento consumido.
+          CPI abaixo de 0.8 = alerta amarelo. Abaixo de 0.6 = crítico. A barra mostra o custo consumido; a
+          linha branca indica o quanto foi entregue — se a linha estiver à esquerda da barra, o projeto está gastando mais do que entregando.
+        </p>
+        <p className="mt-1 text-gray-500">
+          Atualize o <strong className="text-gray-400">% Concluído</strong> semanalmente (botão no hover de cada linha) para manter o CPI preciso.
+        </p>
+      </InfoBox>
+
       {/* KPIs */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-4 gap-4 mb-6 mt-6">
         <div className="bg-gray-900/70 border border-white/5 rounded-xl p-4">
           <p className="text-xs text-gray-500 mb-1">Projetos Ativos</p>
           <p className="text-2xl font-bold text-white">{projects.filter(p => p.status === 'active').length}</p>
@@ -235,7 +227,7 @@ export default function ProjectsPage() {
             <thead>
               <tr className="border-b border-white/5 text-gray-600 text-xs uppercase tracking-wide">
                 <th className="text-left px-6 py-3">Projeto / Cliente</th>
-                <th className="text-left px-4 py-3">Risco</th>
+                <th className="text-left px-4 py-3">Risco / CPI</th>
                 <th className="text-right px-4 py-3">Contrato</th>
                 <th className="text-right px-4 py-3">Custo Real</th>
                 <th className="text-right px-4 py-3">Margem</th>
@@ -260,9 +252,7 @@ export default function ProjectsPage() {
                         </p>
                       )}
                     </td>
-                    <td className="px-4 py-4">
-                      <RiskBadge level={p.risk_level} cpi={p.cpi} />
-                    </td>
+                    <td className="px-4 py-4"><RiskBadge level={p.risk_level} cpi={p.cpi} /></td>
                     <td className="px-4 py-4 text-right">
                       <p className="text-white font-semibold tabular-nums">{fmt(p.revenue)}</p>
                       <p className="text-xs text-gray-600 mt-0.5">{p.budget_hours}h est.</p>
@@ -294,28 +284,27 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {/* Modal: atualizar % de conclusão */}
+      {/* Modal: % de conclusão */}
       <Modal open={progressOpen} onClose={() => setProgressOpen(false)} title="Atualizar Progresso do Projeto">
-        <div className="space-y-6">
+        <div className="space-y-5">
+          <InfoBox icon="📐" title="O que é % Concluído?" variant="tip">
+            <p>É o percentual de entregas <strong className="text-white">validadas</strong> do projeto — não o tempo gasto nem as horas consumidas.
+            Base no que foi de fato entregue e aceito pelo cliente.</p>
+            <p className="mt-1">Este valor alimenta o <strong className="text-white">CPI</strong>: se o projeto consumiu 70% do orçamento mas entregou 35%, o CPI é 0.50 — sinal crítico de que o projeto vai estourar o budget antes de ser concluído.</p>
+            <p className="mt-1 text-gray-500">Atualize semanalmente, de preferência após cada sprint review ou marco de entrega.</p>
+          </InfoBox>
+
           <div>
             <div className="flex justify-between items-center mb-3">
               <label className="text-sm text-gray-400">% Concluído</label>
               <span className="text-3xl font-bold text-cyan-400">{progressVal}%</span>
             </div>
-            <input
-              type="range" min="0" max="100" step="5"
-              value={progressVal}
+            <input type="range" min="0" max="100" step="5" value={progressVal}
               onChange={(e) => setProgressVal(Number(e.target.value))}
-              className="w-full accent-cyan-500"
-            />
+              className="w-full accent-cyan-500" />
             <div className="flex justify-between text-xs text-gray-600 mt-1">
-              <span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span>
+              <span>0% — Não iniciado</span><span>50% — Metade</span><span>100% — Concluído</span>
             </div>
-          </div>
-
-          <div className="bg-gray-800/50 rounded-xl p-4 text-xs text-gray-500 space-y-1">
-            <p>Este valor é usado para calcular o <strong className="text-white">CPI (Índice de Performance de Custo)</strong>.</p>
-            <p>CPI = % entregue ÷ % orçamento consumido. Abaixo de 0.8 dispara alerta.</p>
           </div>
 
           <div className="flex gap-3">
@@ -330,37 +319,93 @@ export default function ProjectsPage() {
 
       {/* Modal: criar/editar projeto */}
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editingId ? 'Editar Projeto' : 'Novo Projeto'}>
-        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+        <div className="space-y-5 max-h-[75vh] overflow-y-auto pr-1">
+          <InfoBox icon="💡" title="Como funciona o Projeto no sistema" variant="tip">
+            <p>Um projeto é o <strong className="text-white">&quot;balde de dinheiro&quot;</strong>: você define quanto o cliente vai pagar e quanto pode gastar para entregar. O sistema monitora automaticamente o quanto o balde está sendo consumido a cada importação de horas.</p>
+          </InfoBox>
+
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Nome do Projeto *" value={form.name} onChange={(v) => setForm({ ...form, name: v })} placeholder="Projeto Manobra" />
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">Nome do Projeto *</label>
+              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Modernização ERP Tambasa Q2"
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500" />
+              <FieldHelp text="Nome interno do contrato. Use algo descritivo e com contexto temporal quando possível. Ex: 'Modernização ERP Tambasa Q2/2025'. Este nome aparece em todos os relatórios e na Visão Executiva." />
+            </div>
             <div>
               <label className="block text-xs font-medium text-gray-400 mb-1">Cliente</label>
               <select value={form.client_id} onChange={(e) => setForm({ ...form, client_id: e.target.value })}
                 className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
-                <option value="">Sem cliente</option>
+                <option value="">Sem cliente vinculado</option>
                 {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
+              <FieldHelp text="Empresa que contratou este projeto. Define em qual relatório de P&L (por cliente e por grupo) este projeto será consolidado. Sem cliente vinculado, o projeto fica fora dos relatórios por conta." />
             </div>
           </div>
-          <Field label="Descrição / Escopo" value={form.description} onChange={(v) => setForm({ ...form, description: v })} placeholder="Objetivo e escopo do projeto" />
+
+          <div>
+            <label className="block text-xs font-medium text-gray-400 mb-1">Descrição / Escopo</label>
+            <input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Objetivo principal, entregas acordadas, tecnologias envolvidas..."
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500" />
+            <FieldHelp text="Contexto interno do projeto: objetivo, escopo acordado, principais entregas. Não é exibido para o cliente — serve para o gestor lembrar o que foi contratado ao analisar os números meses depois." />
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Data de Início" value={form.started_at} onChange={(v) => setForm({ ...form, started_at: v })} type="date" />
-            <Field label="Data de Entrega" value={form.estimated_end_at} onChange={(v) => setForm({ ...form, estimated_end_at: v })} type="date" />
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">Data de Início</label>
+              <input type="date" value={form.started_at} onChange={(e) => setForm({ ...form, started_at: e.target.value })}
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" />
+              <FieldHelp text="Data em que o projeto foi oficialmente iniciado. Usada para calcular o tempo total de execução e o burn rate mensal médio." />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">Data de Entrega</label>
+              <input type="date" value={form.estimated_end_at} onChange={(e) => setForm({ ...form, estimated_end_at: e.target.value })}
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" />
+              <FieldHelp text="Prazo contratual de entrega. O sistema usa esta data para calcular dias restantes, disparar alertas de atraso e classificar o status de saúde do projeto." />
+            </div>
           </div>
 
           {/* Budget block */}
-          <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-xl p-4 space-y-3">
-            <p className="text-xs font-bold text-cyan-400 uppercase tracking-wide">💰 Balde de Dinheiro</p>
-            <div className="grid grid-cols-3 gap-3">
-              <Field label="Valor do Contrato (R$)" value={form.contract_value} onChange={(v) => setForm({ ...form, contract_value: v })} placeholder="100000" type="number" />
-              <Field label="Horas Estimadas" value={form.budget_hours} onChange={(v) => setForm({ ...form, budget_hours: v })} placeholder="500" type="number" />
-              <Field label="Budget de Custo (R$)" value={form.budget_cost} onChange={(v) => setForm({ ...form, budget_cost: v })} placeholder="60000" type="number" />
+          <div className="bg-cyan-500/5 border border-cyan-500/20 rounded-xl p-4 space-y-4">
+            <div>
+              <p className="text-xs font-bold text-cyan-400 uppercase tracking-wide mb-1">💰 O Balde de Dinheiro</p>
+              <p className="text-xs text-gray-500">Defina a receita do contrato e quanto pode gastar para entregá-lo. A diferença é a sua margem alvo.</p>
             </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">Valor do Contrato (R$) *</label>
+              <input type="number" value={form.contract_value} onChange={(e) => setForm({ ...form, contract_value: e.target.value })}
+                placeholder="100000"
+                className="w-full bg-gray-800 border border-cyan-500/30 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-400 font-semibold" />
+              <FieldHelp text="Receita bruta acordada com o cliente — quanto ele vai te pagar pela entrega completa. Este é o teto do faturamento. O sistema compara todos os custos contra este valor para calcular a margem real." />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-1">Horas Estimadas</label>
+                <input type="number" value={form.budget_hours} onChange={(e) => setForm({ ...form, budget_hours: e.target.value })}
+                  placeholder="500"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500" />
+                <FieldHelp text="Total de horas de esforço previstas para entregar o projeto. Usado para calcular o burn rate de horas e projetar a ocupação da equipe no Capacity Forecast." />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-400 mb-1">Budget de Custo (R$)</label>
+                <input type="number" value={form.budget_cost} onChange={(e) => setForm({ ...form, budget_cost: e.target.value })}
+                  placeholder="60000"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500" />
+                <FieldHelp text="Quanto você pode gastar em custo operacional (equipe + despesas) e ainda ter lucro. Deve ser menor que o Valor do Contrato. A diferença (Contrato − Budget) é a sua margem alvo. Quando o custo real ultrapassar este valor, o risco do projeto muda para Crítico ou Sangramento." />
+              </div>
+            </div>
+
             {form.contract_value && form.budget_cost && (
-              <p className="text-xs text-cyan-400/70">
-                Margem alvo: {fmt(Number(form.contract_value) - Number(form.budget_cost))}
-                {' '}({((1 - Number(form.budget_cost) / Number(form.contract_value)) * 100).toFixed(0)}%)
-              </p>
+              <div className="bg-gray-900/50 rounded-lg px-3 py-2 flex justify-between items-center">
+                <span className="text-xs text-gray-500">Margem alvo</span>
+                <div className="text-right">
+                  <span className="text-sm font-bold text-green-400">{fmt(Number(form.contract_value) - Number(form.budget_cost))}</span>
+                  <span className="text-xs text-gray-600 ml-2">({((1 - Number(form.budget_cost) / Number(form.contract_value)) * 100).toFixed(0)}%)</span>
+                </div>
+              </div>
             )}
           </div>
 
@@ -370,16 +415,19 @@ export default function ProjectsPage() {
                 <label className="block text-xs font-medium text-gray-400 mb-1">Status</label>
                 <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}
                   className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
-                  {['active', 'paused', 'completed', 'cancelled'].map(s => (
-                    <option key={s} value={s}>{s === 'active' ? 'Ativo' : s === 'paused' ? 'Pausado' : s === 'completed' ? 'Concluído' : 'Cancelado'}</option>
-                  ))}
+                  <option value="active">Ativo — em execução</option>
+                  <option value="paused">Pausado — temporariamente suspenso</option>
+                  <option value="completed">Concluído — entregue</option>
+                  <option value="cancelled">Cancelado — não será entregue</option>
                 </select>
+                <FieldHelp text="Status atual do contrato. Projetos 'Concluídos' e 'Cancelados' saem dos KPIs da Visão Executiva mas mantêm o histórico financeiro." />
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-400 mb-1">% Concluído</label>
                 <input type="number" min="0" max="100" value={form.progress_pct}
                   onChange={(e) => setForm({ ...form, progress_pct: e.target.value })}
                   className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" />
+                <FieldHelp text="Percentual de entregas validadas até hoje. Alimenta o CPI. Use o botão '% Entregue' na tabela para ajustar com o slider." />
               </div>
             </div>
           )}
@@ -393,18 +441,6 @@ export default function ProjectsPage() {
           </div>
         </div>
       </Modal>
-    </div>
-  );
-}
-
-function Field({ label, value, onChange, placeholder, type = 'text' }: {
-  label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string;
-}) {
-  return (
-    <div>
-      <label className="block text-xs font-medium text-gray-400 mb-1">{label}</label>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500 transition-colors" />
     </div>
   );
 }

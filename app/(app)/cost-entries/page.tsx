@@ -4,6 +4,8 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import PageHeader from '@/components/ui/PageHeader';
 import Modal from '@/components/ui/Modal';
 import Badge from '@/components/ui/Badge';
+import FieldHelp from '@/components/ui/FieldHelp';
+import InfoBox from '@/components/ui/InfoBox';
 
 interface Project { id: string; name: string; }
 interface Collaborator {
@@ -205,6 +207,15 @@ export default function CostEntriesPage() {
 
   return (
     <div className="p-8">
+      <InfoBox icon="⬆️" title="Para que serve este menu?">
+        <p>Aqui você <strong className="text-white">alimenta o motor financeiro</strong> com os dados reais de trabalho da equipe. O fluxo é simples:</p>
+        <p className="mt-1">1. A equipe registra as horas no <strong className="text-white">Clockify</strong> (ou similar) durante a semana.</p>
+        <p>2. Você exporta o relatório em CSV e arrasta aqui.</p>
+        <p>3. O sistema cruza cada nome com o <strong className="text-white">custo H/H cadastrado</strong> em Colaboradores e calcula o custo automaticamente.</p>
+        <p>4. O custo é descontado do orçamento do projeto escolhido — a margem atualiza na Visão Executiva.</p>
+        <p className="mt-1 text-yellow-400/80">⚠ Colaboradores sem custo H/H cadastrado têm custo zero na importação. Sempre cadastre o custo em <strong className="text-yellow-300">Colaboradores</strong> antes de importar.</p>
+      </InfoBox>
+
       <PageHeader
         title="Lançar / Importar"
         description="Traga as horas do Clockify ou outro sistema — o custo é calculado automaticamente"
@@ -316,7 +327,10 @@ export default function CostEntriesPage() {
               </table>
 
               {/* Project select + process */}
-              <div className="flex items-center gap-3 px-5 py-4 border-t border-white/5 bg-gray-900/40">
+              <div className="px-5 pt-4 pb-2 border-t border-white/5 bg-gray-900/40 space-y-2">
+                <p className="text-xs text-gray-500">Selecione o projeto destino e clique em Processar. Todos os lançamentos do CSV serão vinculados a este projeto e seu orçamento será atualizado.</p>
+              </div>
+              <div className="flex items-center gap-3 px-5 pb-4 bg-gray-900/40">
                 <select value={importProjectId} onChange={(e) => setImportProjectId(e.target.value)}
                   className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
                   <option value="">Selecione o projeto destino *</option>
@@ -467,7 +481,10 @@ export default function CostEntriesPage() {
 
       {/* Manual entry modal */}
       <Modal open={manualOpen} onClose={() => setManualOpen(false)} title="Novo Lançamento Manual">
-        <div className="space-y-4">
+        <div className="space-y-5">
+          <InfoBox icon="✍️" title="Quando usar o lançamento manual?" variant="tip">
+            <p>Use quando a hora não veio do Clockify — ex: consultoria pontual de um freelancer, ajuste de horas já encerradas, ou custos de equipe externa sem acesso à ferramenta de horas.</p>
+          </InfoBox>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-400 mb-1">Projeto *</label>
@@ -476,16 +493,18 @@ export default function CostEntriesPage() {
                 <option value="">Selecione...</option>
                 {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
+              <FieldHelp text="Projeto ao qual este custo será atribuído. O orçamento deste projeto será descontado automaticamente." />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1">Tipo *</label>
+              <label className="block text-xs font-medium text-gray-400 mb-1">Tipo de Lançamento *</label>
               <select value={form.entry_type} onChange={(e) => setForm({ ...form, entry_type: e.target.value })}
                 className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
-                <option value="billable">Faturável</option>
-                <option value="non_billable">Não Faturável</option>
-                <option value="absence">Ausência</option>
-                <option value="idle">Ociosidade</option>
+                <option value="billable">Faturável — horas que o cliente paga</option>
+                <option value="non_billable">Não Faturável — overhead interno</option>
+                <option value="absence">Ausência — férias, licença</option>
+                <option value="idle">Ociosidade — sem projeto alocado</option>
               </select>
+              <FieldHelp text="Classifica se este esforço gera receita (Faturável) ou é custo puro (demais tipos). Impacta a análise de eficiência operacional nos relatórios." />
             </div>
           </div>
 

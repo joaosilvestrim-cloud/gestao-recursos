@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import PageHeader from '@/components/ui/PageHeader';
 import Modal from '@/components/ui/Modal';
+import FieldHelp from '@/components/ui/FieldHelp';
+import InfoBox from '@/components/ui/InfoBox';
 
 interface Client { id: string; name: string; }
 interface PipelineProject {
@@ -122,6 +124,12 @@ export default function PipelinePage() {
 
   return (
     <div className="p-8">
+      <InfoBox icon="📈" title="Para que serve este menu?">
+        <p>O Pipeline registra <strong className="text-white">oportunidades de negócio em negociação</strong> — contratos que ainda não foram fechados mas que impactam o planejamento da equipe.</p>
+        <p className="mt-1"><strong className="text-white">Receita Ponderada</strong> = Valor Estimado × Probabilidade. É a métrica mais realista do que você pode esperar receber: uma oportunidade de R$ 100K com 40% de chance vale R$ 40K ponderado.</p>
+        <p className="mt-1 text-gray-500">Quando uma oportunidade for ganha, mude o status para <strong className="text-gray-400">Ganho ✓</strong> e cadastre o projeto em <strong className="text-gray-400">Projetos</strong> para iniciar o controle financeiro.</p>
+      </InfoBox>
+
       <PageHeader
         title="Pipeline de Vendas"
         description="Funil de oportunidades e previsão de receita futura"
@@ -273,48 +281,105 @@ export default function PipelinePage() {
 
       {/* Modal */}
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Editar Oportunidade' : 'Nova Oportunidade'}>
-        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+        <div className="space-y-5 max-h-[75vh] overflow-y-auto pr-1">
+          <InfoBox icon="💡" title="Como usar o Pipeline" variant="tip">
+            <p>Registre aqui oportunidades <strong className="text-white">antes de virar contrato</strong>. Quando ganhar, mude o status para Ganho e crie o projeto correspondente em Projetos.</p>
+          </InfoBox>
+
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Nome da Oportunidade *" value={form.name} onChange={(v) => setForm({ ...form, name: v })} placeholder="Projeto XYZ" />
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">Nome da Oportunidade *</label>
+              <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Integração Sistemas Zenatur"
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500" />
+              <FieldHelp text="Nome descritivo da oportunidade. Use algo que identifique o cliente e o escopo. Não precisa ser o nome definitivo do projeto — pode mudar quando o contrato for fechado." />
+            </div>
             <div>
               <label className="block text-xs font-medium text-gray-400 mb-1">Cliente</label>
               <select value={form.client_id} onChange={(e) => setForm({ ...form, client_id: e.target.value })}
                 className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
-                <option value="">Sem cliente</option>
+                <option value="">Sem cliente definido</option>
                 {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
+              <FieldHelp text="Empresa com quem está sendo negociado. Vincular ao cliente permite que a Receita Ponderada apareça consolidada no P&L do grupo holding." />
             </div>
           </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1">Status</label>
+              <label className="block text-xs font-medium text-gray-400 mb-1">Status do Funil</label>
               <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}
                 className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
                 {statusOrder.map(s => <option key={s} value={s}>{statusConfig[s].label}</option>)}
               </select>
+              <FieldHelp text="Estágio atual da negociação. Prospecção → Proposta enviada → Em negociação → Ganho (contrato fechado) ou Perdido. Mova conforme a negociação avança." />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1">Probabilidade: {form.probability_pct}%</label>
+              <label className="block text-xs font-medium text-gray-400 mb-1">Probabilidade de Fechar: <span className="text-cyan-400 font-bold">{form.probability_pct}%</span></label>
               <input type="range" min="0" max="100" step="5" value={form.probability_pct}
                 onChange={(e) => setForm({ ...form, probability_pct: e.target.value })}
                 className="w-full accent-cyan-500 mt-2" />
+              <FieldHelp text="Sua estimativa de chance de fechar este contrato. Usado para calcular a Receita Ponderada do pipeline. Regra geral: Prospecção = 10-20%, Proposta = 30-50%, Negociação = 60-80%." />
             </div>
           </div>
+
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Valor Estimado (R$) *" value={form.estimated_value} onChange={(v) => setForm({ ...form, estimated_value: v })} placeholder="50000" type="number" />
-            <Field label="Horas Estimadas" value={form.estimated_hours} onChange={(v) => setForm({ ...form, estimated_hours: v })} placeholder="200" type="number" />
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">Valor Estimado (R$)</label>
+              <input type="number" value={form.estimated_value} onChange={(e) => setForm({ ...form, estimated_value: e.target.value })} placeholder="50000"
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500" />
+              <FieldHelp text="Valor potencial do contrato se fechado. Usado para calcular o Pipeline Ativo total e a Receita Ponderada. Pode ser uma estimativa — será refinado quando o contrato for ganho." />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">Horas Estimadas</label>
+              <input type="number" value={form.estimated_hours} onChange={(e) => setForm({ ...form, estimated_hours: e.target.value })} placeholder="200"
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500" />
+              <FieldHelp text="Esforço estimado em horas para executar o projeto. Junto com o Início Previsto e a Duração, alimenta o Capacity Forecast mostrando se a equipe terá capacidade para absorver este contrato." />
+            </div>
           </div>
+
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Início Previsto" value={form.expected_start} onChange={(v) => setForm({ ...form, expected_start: v })} type="date" />
-            <Field label="Duração (meses)" value={form.expected_duration_months} onChange={(v) => setForm({ ...form, expected_duration_months: v })} placeholder="3" type="number" />
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">Início Previsto</label>
+              <input type="date" value={form.expected_start} onChange={(e) => setForm({ ...form, expected_start: e.target.value })}
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500" />
+              <FieldHelp text="Data estimada de início se o contrato for ganho. Usada no Capacity Forecast para projetar a ocupação futura da equipe e identificar conflitos de alocação." />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">Duração Prevista (meses)</label>
+              <input type="number" value={form.expected_duration_months} onChange={(e) => setForm({ ...form, expected_duration_months: e.target.value })} placeholder="3"
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500" />
+              <FieldHelp text="Duração prevista do contrato em meses. Com o Início Previsto, define a janela de ocupação da equipe no Capacity Forecast." />
+            </div>
           </div>
-          <Field label="Perfis Necessários" value={form.required_roles} onChange={(v) => setForm({ ...form, required_roles: v })} placeholder="2x Dev Senior, 1x PM" />
-          <Field label="Observações" value={form.notes} onChange={(v) => setForm({ ...form, notes: v })} placeholder="Contexto da oportunidade..." />
+
+          <div>
+            <label className="block text-xs font-medium text-gray-400 mb-1">Perfis Necessários</label>
+            <input value={form.required_roles} onChange={(e) => setForm({ ...form, required_roles: e.target.value })} placeholder="2x Dev Backend Sênior, 1x UX Designer, 1x PM"
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500" />
+            <FieldHelp text="Skills e perfis que serão necessários para executar este projeto. Campo livre — escreva como preferir. Alimenta o Capacity Forecast mostrando quais perfis estarão em alta demanda se esta oportunidade for convertida." />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-400 mb-1">Observações Internas</label>
+            <input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} placeholder="Contexto da negociação, decisores envolvidos, riscos..."
+              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-cyan-500" />
+            <FieldHelp text="Notas internas sobre a negociação: quem são os decisores, quais objeções surgiram, próximos passos acordados. Visível apenas para a equipe de gestão." />
+          </div>
+
+          {form.estimated_value && form.probability_pct && (
+            <div className="bg-gray-800/50 rounded-xl px-4 py-3 flex justify-between items-center">
+              <span className="text-xs text-gray-500">Valor ponderado desta oportunidade</span>
+              <span className="text-sm font-bold text-cyan-400">
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(Number(form.estimated_value) * Number(form.probability_pct) / 100)}
+              </span>
+            </div>
+          )}
+
           <div className="flex gap-3 pt-2">
             <button onClick={() => setModalOpen(false)} className="flex-1 py-2 rounded-lg border border-gray-700 text-gray-400 hover:text-white text-sm transition-colors">Cancelar</button>
             <button onClick={save} disabled={saving || !form.name}
               className="flex-1 py-2 rounded-lg bg-gradient-to-r from-cyan-600 to-green-600 hover:opacity-90 disabled:opacity-40 text-white text-sm font-medium transition-opacity">
-              {saving ? 'Salvando...' : 'Salvar'}
+              {saving ? 'Salvando...' : 'Salvar Oportunidade'}
             </button>
           </div>
         </div>
