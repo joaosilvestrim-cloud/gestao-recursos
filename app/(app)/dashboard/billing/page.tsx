@@ -47,14 +47,26 @@ function isOverdue(due: string | null, status: string) {
   return new Date(due) < new Date();
 }
 
-const EMPTY_FORM = {
+type FormStatus = 'pending' | 'achieved' | 'billed';
+
+interface BillingForm {
+  project_id: string;
+  name: string;
+  description: string;
+  amount: string;
+  due_date: string;
+  triggered_by: string;
+  status: FormStatus;
+}
+
+const EMPTY_FORM: BillingForm = {
   project_id: '',
   name: '',
   description: '',
   amount: '',
   due_date: '',
   triggered_by: '',
-  status: 'pending' as const,
+  status: 'pending',
 };
 
 export default function BillingPage() {
@@ -65,7 +77,7 @@ export default function BillingPage() {
   const [filterProject, setFilterProject] = useState<string>('');
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<BillingMilestone | null>(null);
-  const [form, setForm] = useState({ ...EMPTY_FORM });
+  const [form, setForm] = useState<BillingForm>({ ...EMPTY_FORM });
   const [saving, setSaving] = useState(false);
 
   async function load() {
