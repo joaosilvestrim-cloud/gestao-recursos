@@ -32,6 +32,23 @@ const nav = [
         icon: '🔭',
         desc: 'Projeção de ocupação da equipe com base nos projetos ativos e pipeline.',
       },
+      {
+        href: '/dashboard/finance',
+        label: 'KPIs Financeiros',
+        icon: '📈',
+        desc: 'Receita contratada vs realizada, fluxo de caixa, marcos vencidos e pipeline de receita.',
+      },
+    ],
+  },
+  {
+    section: 'Intranet',
+    items: [
+      {
+        href: '/wiki',
+        label: 'Wiki da Equipe',
+        icon: '📚',
+        desc: 'Base de conhecimento interna: onboarding, processos, políticas e documentação técnica.',
+      },
     ],
   },
   {
