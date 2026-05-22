@@ -271,7 +271,7 @@ export default function FinancePage() {
               tickFormatter={v => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} />
             <Tooltip
               contentStyle={customTooltipStyle}
-              formatter={(v: number) => [fmtCurrency(v), 'Faturado']}
+              formatter={(v) => [fmtCurrency(typeof v === 'number' ? v : null), 'Faturado']}
             />
             <Bar dataKey="value" radius={[4, 4, 0, 0]}>
               {monthlyData.map((entry, i) => (
