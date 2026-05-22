@@ -3,121 +3,33 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-
-const nav = [
-  {
-    section: 'Command Center',
-    items: [
-      {
-        href: '/dashboard',
-        label: 'Visão Executiva',
-        icon: '📊',
-        desc: 'Painel de comando: KPIs de receita, custo, margem e projetos em risco em tempo real.',
-      },
-      {
-        href: '/dashboard/pl',
-        label: 'P&L por Conta',
-        icon: '💰',
-        desc: 'Demonstrativo de lucros e perdas consolidado por grupo, cliente e projeto.',
-      },
-      {
-        href: '/dashboard/billing',
-        label: 'Faturamento',
-        icon: '🔔',
-        desc: 'Marcos de faturamento, notas pendentes e alertas de cobrança por projeto.',
-      },
-      {
-        href: '/dashboard/capacity',
-        label: 'Capacity Forecast',
-        icon: '🔭',
-        desc: 'Projeção de ocupação da equipe com base nos projetos ativos e pipeline.',
-      },
-      {
-        href: '/dashboard/finance',
-        label: 'KPIs Financeiros',
-        icon: '📈',
-        desc: 'Receita contratada vs realizada, fluxo de caixa, marcos vencidos e pipeline de receita.',
-      },
-    ],
-  },
-  {
-    section: 'Intranet',
-    items: [
-      {
-        href: '/wiki',
-        label: 'Wiki da Equipe',
-        icon: '📚',
-        desc: 'Base de conhecimento interna: onboarding, processos, políticas e documentação técnica.',
-      },
-    ],
-  },
-  {
-    section: 'Portfólio',
-    items: [
-      {
-        href: '/groups',
-        label: 'Grupos / Contas',
-        icon: '🏛️',
-        desc: 'Holdings e unidades de negócio (Tambasa, Zenatur, Eagles Group). Agrupa clientes para P&L consolidado.',
-      },
-      {
-        href: '/clients',
-        label: 'Clientes',
-        icon: '🏢',
-        desc: 'Empresas contratantes dos projetos. Vinculados a um grupo holding para consolidação financeira.',
-      },
-      {
-        href: '/projects',
-        label: 'Projetos',
-        icon: '📁',
-        desc: 'Contratos ativos com orçamento, CPI e saúde financeira. Aqui você define o "balde de dinheiro".',
-      },
-      {
-        href: '/pipeline',
-        label: 'Pipeline',
-        icon: '📈',
-        desc: 'Oportunidades em negociação. Alimenta o Capacity Forecast com demanda futura da equipe.',
-      },
-    ],
-  },
-  {
-    section: 'Dados Financeiros',
-    items: [
-      {
-        href: '/cost-entries',
-        label: 'Lançar / Importar',
-        icon: '⬆️',
-        desc: 'Importe horas do Clockify via CSV ou lance manualmente. O custo H/H é calculado automaticamente.',
-      },
-      {
-        href: '/indirect-costs',
-        label: 'Custos Indiretos',
-        icon: '🧾',
-        desc: 'SGA (despesas administrativas e de suporte) rateados entre os projetos para apurar margem real.',
-      },
-      {
-        href: '/expenses',
-        label: 'Despesas Extra',
-        icon: '💳',
-        desc: 'Licenças de software, viagens, contratados PJ e outros custos diretos atribuídos por projeto.',
-      },
-    ],
-  },
-  {
-    section: 'Cadastros',
-    items: [
-      {
-        href: '/collaborators',
-        label: 'Colaboradores',
-        icon: '👥',
-        desc: 'Equipe com custo H/H cadastrado. Base do motor financeiro — todo cálculo de margem parte daqui.',
-      },
-    ],
-  },
-];
+import { useEffect, useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { NAV, type Role } from '@/lib/auth/roles';
+import UserMenu from './UserMenu';
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [role, setRole] = useState<Role | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) {
+        setRole((data.user.user_metadata?.role as Role) ?? 'collaborator');
+      }
+    });
+  }, []);
+
+  // Filter sections and items by role
+  const visibleNav = NAV.map(section => ({
+    ...section,
+    items: section.items.filter(item => {
+      if (item.roles === 'all') return true;
+      if (!role) return false;
+      return (item.roles as Role[]).includes(role);
+    }),
+  })).filter(section => section.items.length > 0);
 
   return (
     <aside className="w-64 shrink-0 flex flex-col min-h-screen bg-gray-950 border-r border-white/5">
@@ -131,7 +43,7 @@ export default function Sidebar() {
       </Link>
 
       <nav className="flex-1 py-3 overflow-y-auto">
-        {nav.map((group) => (
+        {visibleNav.map((group) => (
           <div key={group.section} className="mb-1">
             <p className="px-5 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-600">
               {group.section}
@@ -165,8 +77,11 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="px-5 py-4 border-t border-white/5">
-        <p className="text-[10px] text-gray-700">v0.3.0 · {new Date().getFullYear()} Drive Data</p>
+      {/* User menu at bottom */}
+      <UserMenu />
+
+      <div className="px-5 py-2 border-t border-white/5">
+        <p className="text-[10px] text-gray-700">v0.4.0 · {new Date().getFullYear()} Drive Data</p>
       </div>
     </aside>
   );
