@@ -75,7 +75,7 @@ export type NavSection = {
 
 export const NAV: NavSection[] = [
   {
-    section: 'Command Center',
+    section: 'Dashboards',
     icon: '📊',
     items: [
       {
@@ -96,21 +96,21 @@ export const NAV: NavSection[] = [
         href: '/dashboard/billing',
         label: 'Faturamento',
         icon: '🔔',
-        desc: 'Marcos de faturamento, notas pendentes e alertas de cobrança por projeto.',
+        desc: 'Marcos de faturamento, notas pendentes e alertas de cobrança.',
         roles: ['director', 'finance'],
       },
       {
         href: '/dashboard/capacity',
         label: 'Capacity Forecast',
         icon: '🔭',
-        desc: 'Projeção de ocupação da equipe com base nos projetos ativos e pipeline.',
+        desc: 'Projeção de ocupação da equipe com base nos projetos e pipeline.',
         roles: ['director', 'manager'],
       },
       {
         href: '/dashboard/finance',
         label: 'KPIs Financeiros',
         icon: '📈',
-        desc: 'Receita contratada vs realizada, fluxo de caixa, marcos vencidos e pipeline.',
+        desc: 'Receita contratada vs realizada, marcos vencidos e pipeline.',
         roles: ['director', 'finance'],
       },
     ],
@@ -130,14 +130,14 @@ export const NAV: NavSection[] = [
         href: '/financeiro/receber',
         label: 'Contas a Receber',
         icon: '📥',
-        desc: 'Gerencie recebimentos dos clientes, datas e status de cobrança.',
+        desc: 'Recebimentos dos clientes, datas e status de cobrança.',
         roles: ['director', 'finance'],
       },
       {
         href: '/financeiro/pagar',
         label: 'Contas a Pagar',
         icon: '📤',
-        desc: 'Controle pagamentos a fornecedores, despesas e obrigações.',
+        desc: 'Pagamentos a fornecedores, despesas e obrigações.',
         roles: ['director', 'finance'],
       },
       {
@@ -146,6 +146,20 @@ export const NAV: NavSection[] = [
         icon: '🌊',
         desc: 'Projeção mensal de entradas, saídas e saldo acumulado.',
         roles: ['director', 'finance'],
+      },
+      {
+        href: '/indirect-costs',
+        label: 'Custos Indiretos',
+        icon: '🧾',
+        desc: 'SGA rateados entre os projetos para apurar margem real.',
+        roles: ['director', 'finance'],
+      },
+      {
+        href: '/expenses',
+        label: 'Despesas Extra',
+        icon: '💳',
+        desc: 'Licenças, viagens e outros custos diretos por projeto.',
+        roles: ['director', 'finance', 'manager'],
       },
     ],
   },
@@ -193,20 +207,6 @@ export const NAV: NavSection[] = [
         icon: '⬆️',
         desc: 'Importe horas do Clockify via CSV ou lance manualmente.',
         roles: ['director', 'manager'],
-      },
-      {
-        href: '/indirect-costs',
-        label: 'Custos Indiretos',
-        icon: '🧾',
-        desc: 'SGA rateados entre os projetos para apurar margem real.',
-        roles: ['director', 'finance'],
-      },
-      {
-        href: '/expenses',
-        label: 'Despesas Extra',
-        icon: '💳',
-        desc: 'Licenças, viagens e outros custos diretos por projeto.',
-        roles: ['director', 'finance', 'manager'],
       },
     ],
   },
