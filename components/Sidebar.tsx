@@ -45,7 +45,8 @@ export default function Sidebar() {
       <nav className="flex-1 py-3 overflow-y-auto">
         {visibleNav.map((group) => (
           <div key={group.section} className="mb-1">
-            <p className="px-5 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-600">
+            <p className="px-5 pt-4 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-600 flex items-center gap-1.5">
+              <span>{group.icon}</span>
               {group.section}
             </p>
             {group.items.map((item) => {
@@ -81,7 +82,7 @@ export default function Sidebar() {
       <UserMenu />
 
       <div className="px-5 py-2 border-t border-white/5">
-        <p className="text-[10px] text-gray-700">v0.4.0 · {new Date().getFullYear()} Drive Data</p>
+        <p className="text-[10px] text-gray-700">v0.5.0 · {new Date().getFullYear()} Drive Data</p>
       </div>
     </aside>
   );

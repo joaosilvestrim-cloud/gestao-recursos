@@ -1,74 +1,64 @@
 export type Role = 'director' | 'finance' | 'manager' | 'collaborator';
 
 export const ROLE_LABELS: Record<Role, string> = {
-  director: '👑 Diretoria',
-  finance: '💼 Financeiro',
-  manager: '🧑‍💼 Gerente',
+  director:     '👑 Diretoria',
+  finance:      '💼 Financeiro',
+  manager:      '🧑‍💼 Gerente',
   collaborator: '👤 Colaborador',
 };
 
 export const ROLE_COLORS: Record<Role, string> = {
-  director: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
-  finance: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-  manager: 'bg-green-500/15 text-green-400 border-green-500/30',
+  director:     'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
+  finance:      'bg-blue-500/15 text-blue-400 border-blue-500/30',
+  manager:      'bg-green-500/15 text-green-400 border-green-500/30',
   collaborator: 'bg-gray-500/15 text-gray-400 border-gray-500/30',
 };
 
-/**
- * Route prefix → roles allowed to access.
- * More specific prefixes take priority (checked in order of length, longest first).
- * 'all' means any authenticated user.
- */
 export const ROUTE_PERMISSIONS: { prefix: string; roles: Role[] | 'all' }[] = [
-  // Admin — director only
+  // Admin
   { prefix: '/admin', roles: ['director'] },
 
   // Command Center
-  { prefix: '/dashboard/pl', roles: ['director', 'finance'] },
-  { prefix: '/dashboard/billing', roles: ['director', 'finance'] },
-  { prefix: '/dashboard/capacity', roles: ['director', 'manager'] },
-  { prefix: '/dashboard/finance', roles: ['director', 'finance'] },
   { prefix: '/dashboard', roles: ['director', 'finance'] },
 
-  // Portfolio
-  { prefix: '/groups', roles: ['director', 'finance'] },
-  { prefix: '/clients', roles: ['director', 'finance', 'manager'] },
+  // Financeiro (novo módulo)
+  { prefix: '/financeiro', roles: ['director', 'finance'] },
+
+  // Portfólio
+  { prefix: '/groups',   roles: ['director', 'finance'] },
+  { prefix: '/clients',  roles: ['director', 'finance', 'manager'] },
   { prefix: '/projects', roles: ['director', 'finance', 'manager'] },
   { prefix: '/pipeline', roles: ['director', 'manager'] },
 
-  // Financial data
-  { prefix: '/cost-entries', roles: ['director', 'manager'] },
+  // Operações
+  { prefix: '/cost-entries',   roles: ['director', 'manager'] },
   { prefix: '/indirect-costs', roles: ['director', 'finance'] },
-  { prefix: '/expenses', roles: ['director', 'finance', 'manager'] },
+  { prefix: '/expenses',       roles: ['director', 'finance', 'manager'] },
 
-  // People
+  // Pessoas
   { prefix: '/collaborators', roles: ['director', 'finance', 'manager'] },
 
-  // Wiki — all authenticated users
+  // Wiki
   { prefix: '/wiki', roles: 'all' },
 ];
 
 export function getDefaultRoute(role: Role): string {
   switch (role) {
-    case 'director': return '/dashboard';
-    case 'finance': return '/dashboard';
-    case 'manager': return '/projects';
+    case 'director':     return '/dashboard';
+    case 'finance':      return '/financeiro';
+    case 'manager':      return '/projects';
     case 'collaborator': return '/wiki';
   }
 }
 
 export function canAccess(pathname: string, role: Role): boolean {
-  // Sort by prefix length descending to match most specific first
   const sorted = [...ROUTE_PERMISSIONS].sort((a, b) => b.prefix.length - a.prefix.length);
   const match = sorted.find(r => pathname === r.prefix || pathname.startsWith(r.prefix + '/'));
-  if (!match) return true; // unmatched routes are public (login, etc.)
+  if (!match) return true;
   if (match.roles === 'all') return true;
   return (match.roles as Role[]).includes(role);
 }
 
-/**
- * NAV items with their allowed roles — used by Sidebar to filter items.
- */
 export type NavItem = {
   href: string;
   label: string;
@@ -79,18 +69,20 @@ export type NavItem = {
 
 export type NavSection = {
   section: string;
+  icon: string;
   items: NavItem[];
 };
 
 export const NAV: NavSection[] = [
   {
     section: 'Command Center',
+    icon: '📊',
     items: [
       {
         href: '/dashboard',
         label: 'Visão Executiva',
         icon: '📊',
-        desc: 'Painel de comando: KPIs de receita, custo, margem e projetos em risco em tempo real.',
+        desc: 'KPIs de receita, custo, margem e projetos em risco em tempo real.',
         roles: ['director', 'finance'],
       },
       {
@@ -118,13 +110,48 @@ export const NAV: NavSection[] = [
         href: '/dashboard/finance',
         label: 'KPIs Financeiros',
         icon: '📈',
-        desc: 'Receita contratada vs realizada, fluxo de caixa, marcos vencidos e pipeline de receita.',
+        desc: 'Receita contratada vs realizada, fluxo de caixa, marcos vencidos e pipeline.',
+        roles: ['director', 'finance'],
+      },
+    ],
+  },
+  {
+    section: 'Financeiro',
+    icon: '💰',
+    items: [
+      {
+        href: '/financeiro',
+        label: 'Balanço Geral',
+        icon: '⚖️',
+        desc: 'Posição líquida, resultado do mês e histórico de entradas e saídas.',
+        roles: ['director', 'finance'],
+      },
+      {
+        href: '/financeiro/receber',
+        label: 'Contas a Receber',
+        icon: '📥',
+        desc: 'Gerencie recebimentos dos clientes, datas e status de cobrança.',
+        roles: ['director', 'finance'],
+      },
+      {
+        href: '/financeiro/pagar',
+        label: 'Contas a Pagar',
+        icon: '📤',
+        desc: 'Controle pagamentos a fornecedores, despesas e obrigações.',
+        roles: ['director', 'finance'],
+      },
+      {
+        href: '/financeiro/fluxo',
+        label: 'Fluxo de Caixa',
+        icon: '🌊',
+        desc: 'Projeção mensal de entradas, saídas e saldo acumulado.',
         roles: ['director', 'finance'],
       },
     ],
   },
   {
     section: 'Portfólio',
+    icon: '📁',
     items: [
       {
         href: '/groups',
@@ -137,7 +164,7 @@ export const NAV: NavSection[] = [
         href: '/clients',
         label: 'Clientes',
         icon: '🏢',
-        desc: 'Empresas contratantes dos projetos. Vinculados a um grupo para consolidação.',
+        desc: 'Empresas contratantes vinculadas a um grupo para consolidação.',
         roles: ['director', 'finance', 'manager'],
       },
       {
@@ -157,11 +184,12 @@ export const NAV: NavSection[] = [
     ],
   },
   {
-    section: 'Dados Financeiros',
+    section: 'Operações',
+    icon: '⚙️',
     items: [
       {
         href: '/cost-entries',
-        label: 'Lançar / Importar',
+        label: 'Lançar Horas',
         icon: '⬆️',
         desc: 'Importe horas do Clockify via CSV ou lance manualmente.',
         roles: ['director', 'manager'],
@@ -183,7 +211,8 @@ export const NAV: NavSection[] = [
     ],
   },
   {
-    section: 'Cadastros',
+    section: 'Pessoas',
+    icon: '👥',
     items: [
       {
         href: '/collaborators',
@@ -196,6 +225,7 @@ export const NAV: NavSection[] = [
   },
   {
     section: 'Intranet',
+    icon: '📚',
     items: [
       {
         href: '/wiki',
@@ -208,12 +238,13 @@ export const NAV: NavSection[] = [
   },
   {
     section: 'Administração',
+    icon: '🔐',
     items: [
       {
-        href: '/admin/users',
-        label: 'Usuários & Acessos',
+        href: '/admin',
+        label: 'Painel Admin',
         icon: '🔐',
-        desc: 'Convide colaboradores, defina perfis de acesso e desative contas.',
+        desc: 'Usuários, permissões e configurações do sistema.',
         roles: ['director'],
       },
     ],
