@@ -70,74 +70,58 @@ export type NavItem = {
 export type NavSection = {
   section: string;
   icon: string;
+  priority?: boolean;   // true = sempre visível e destacado no topo
+  collapsible?: boolean; // true = recolhível na sidebar
   items: NavItem[];
 };
 
 export const NAV: NavSection[] = [
+  // ── PRIORIDADE — sempre visível, foco em projetos e rentabilidade ──
   {
-    section: 'Dashboards',
-    icon: '📊',
+    section: 'Projetos & Rentabilidade',
+    icon: '🎯',
+    priority: true,
     items: [
       {
         href: '/dashboard',
         label: 'Visão Executiva',
         icon: '📊',
-        desc: 'KPIs de receita, custo, margem e projetos em risco em tempo real.',
+        desc: 'KPIs de receita, custo, margem e projetos em risco.',
         roles: ['director', 'finance'],
+      },
+      {
+        href: '/projects',
+        label: 'Projetos',
+        icon: '📁',
+        desc: 'Contratos ativos com orçamento, CPI e saúde financeira.',
+        roles: ['director', 'finance', 'manager'],
       },
       {
         href: '/dashboard/pl',
         label: 'P&L por Conta',
         icon: '💰',
-        desc: 'Demonstrativo de lucros e perdas consolidado por grupo, cliente e projeto.',
+        desc: 'Lucros e perdas consolidado por grupo, cliente e projeto.',
         roles: ['director', 'finance'],
       },
-      {
-        href: '/dashboard/billing',
-        label: 'Faturamento',
-        icon: '🔔',
-        desc: 'Marcos de faturamento, notas pendentes e alertas de cobrança.',
-        roles: ['director', 'finance'],
-      },
-      {
-        href: '/dashboard/capacity',
-        label: 'Capacity Forecast',
-        icon: '🔭',
-        desc: 'Projeção de ocupação da equipe com base nos projetos e pipeline.',
-        roles: ['director', 'manager'],
-      },
-      {
-        href: '/dashboard/finance',
-        label: 'KPIs Financeiros',
-        icon: '📈',
-        desc: 'Receita contratada vs realizada, marcos vencidos e pipeline.',
-        roles: ['director', 'finance'],
-      },
-    ],
-  },
-  {
-    section: 'Financeiro',
-    icon: '💰',
-    items: [
       {
         href: '/financeiro',
         label: 'Balanço Geral',
         icon: '⚖️',
-        desc: 'Posição líquida, resultado do mês e histórico de entradas e saídas.',
+        desc: 'Posição líquida, resultado do mês e fluxo de caixa.',
         roles: ['director', 'finance'],
       },
       {
         href: '/financeiro/receber',
         label: 'Contas a Receber',
         icon: '📥',
-        desc: 'Recebimentos dos clientes, datas e status de cobrança.',
+        desc: 'Recebimentos dos clientes e status de cobrança.',
         roles: ['director', 'finance'],
       },
       {
         href: '/financeiro/pagar',
         label: 'Contas a Pagar',
         icon: '📤',
-        desc: 'Pagamentos a fornecedores, despesas e obrigações.',
+        desc: 'Pagamentos a fornecedores e obrigações.',
         roles: ['director', 'finance'],
       },
       {
@@ -148,51 +132,68 @@ export const NAV: NavSection[] = [
         roles: ['director', 'finance'],
       },
       {
-        href: '/indirect-costs',
-        label: 'Custos Indiretos',
-        icon: '🧾',
-        desc: 'SGA rateados entre os projetos para apurar margem real.',
+        href: '/collaborators',
+        label: 'Colaboradores',
+        icon: '👥',
+        desc: 'Equipe e custo H/H — base do motor financeiro.',
+        roles: ['director', 'finance', 'manager'],
+      },
+    ],
+  },
+
+  // ── SEÇÕES EXPANSÍVEIS ──
+  {
+    section: 'Dashboards',
+    icon: '📈',
+    collapsible: true,
+    items: [
+      {
+        href: '/dashboard/billing',
+        label: 'Faturamento',
+        icon: '🔔',
+        desc: 'Marcos de faturamento e alertas de cobrança.',
         roles: ['director', 'finance'],
       },
       {
-        href: '/expenses',
-        label: 'Despesas Extra',
-        icon: '💳',
-        desc: 'Licenças, viagens e outros custos diretos por projeto.',
-        roles: ['director', 'finance', 'manager'],
+        href: '/dashboard/capacity',
+        label: 'Capacity Forecast',
+        icon: '🔭',
+        desc: 'Projeção de ocupação da equipe.',
+        roles: ['director', 'manager'],
+      },
+      {
+        href: '/dashboard/finance',
+        label: 'KPIs Financeiros',
+        icon: '📊',
+        desc: 'Receita contratada vs realizada e pipeline.',
+        roles: ['director', 'finance'],
       },
     ],
   },
   {
     section: 'Portfólio',
-    icon: '📁',
+    icon: '🏛️',
+    collapsible: true,
     items: [
       {
         href: '/groups',
         label: 'Grupos / Contas',
         icon: '🏛️',
-        desc: 'Holdings e unidades de negócio. Agrupa clientes para P&L consolidado.',
+        desc: 'Holdings e unidades de negócio.',
         roles: ['director', 'finance'],
       },
       {
         href: '/clients',
         label: 'Clientes',
         icon: '🏢',
-        desc: 'Empresas contratantes vinculadas a um grupo para consolidação.',
-        roles: ['director', 'finance', 'manager'],
-      },
-      {
-        href: '/projects',
-        label: 'Projetos',
-        icon: '📁',
-        desc: 'Contratos ativos com orçamento, CPI e saúde financeira.',
+        desc: 'Empresas contratantes vinculadas a grupos.',
         roles: ['director', 'finance', 'manager'],
       },
       {
         href: '/pipeline',
         label: 'Pipeline',
         icon: '📈',
-        desc: 'Oportunidades em negociação. Alimenta o Capacity Forecast.',
+        desc: 'Oportunidades em negociação.',
         roles: ['director', 'manager'],
       },
     ],
@@ -200,25 +201,27 @@ export const NAV: NavSection[] = [
   {
     section: 'Operações',
     icon: '⚙️',
+    collapsible: true,
     items: [
       {
         href: '/cost-entries',
         label: 'Lançar Horas',
         icon: '⬆️',
-        desc: 'Importe horas do Clockify via CSV ou lance manualmente.',
+        desc: 'Importe horas do Clockify ou lance manualmente.',
         roles: ['director', 'manager'],
       },
-    ],
-  },
-  {
-    section: 'Pessoas',
-    icon: '👥',
-    items: [
       {
-        href: '/collaborators',
-        label: 'Colaboradores',
-        icon: '👥',
-        desc: 'Equipe com custo H/H. Base do motor financeiro.',
+        href: '/indirect-costs',
+        label: 'Custos Indiretos',
+        icon: '🧾',
+        desc: 'SGA rateados entre projetos.',
+        roles: ['director', 'finance'],
+      },
+      {
+        href: '/expenses',
+        label: 'Despesas Extra',
+        icon: '💳',
+        desc: 'Licenças, viagens e outros custos diretos.',
         roles: ['director', 'finance', 'manager'],
       },
     ],
@@ -226,12 +229,13 @@ export const NAV: NavSection[] = [
   {
     section: 'Intranet',
     icon: '📚',
+    collapsible: true,
     items: [
       {
         href: '/wiki',
         label: 'Wiki da Equipe',
         icon: '📚',
-        desc: 'Base de conhecimento: onboarding, processos e documentação técnica.',
+        desc: 'Base de conhecimento e documentação técnica.',
         roles: 'all',
       },
     ],
@@ -239,12 +243,13 @@ export const NAV: NavSection[] = [
   {
     section: 'Administração',
     icon: '🔐',
+    collapsible: true,
     items: [
       {
         href: '/admin',
         label: 'Painel Admin',
         icon: '🔐',
-        desc: 'Usuários, permissões e configurações do sistema.',
+        desc: 'Usuários, permissões e configurações.',
         roles: ['director'],
       },
     ],
